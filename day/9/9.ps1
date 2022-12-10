@@ -1,4 +1,21 @@
 #functions
+function CalculatePosition {
+    param (
+        $current,
+        $move
+    )
+
+    switch ($move[0]) {
+        R { $current[0] += $move[1] }
+        L { $current[0] -= $move[1] }
+        U { $current[1] += $move[1] }
+        D { $current[1] -= $move[1] }
+    }
+
+    return $current
+
+}
+
 function ReadOperations {
     param (
         $in
@@ -9,7 +26,6 @@ function ReadOperations {
     for ($y = 0; $y -le $in.count; $y++) {
         $row = ($in[$y] -split " ")
         $op += ,@($row)
-        #$op += @{$row[0] = [int]$row[1]}
     }
 
     return $op
@@ -19,16 +35,6 @@ function GetMaxDimensions {
     param (
         $op
     )
-    
-    $stepsum = @{
-        U = 0
-        D = 0
-        R = 0
-        L = 0
-    }
-    foreach ($step in $($stepsum.keys)){
-        $stepsum[$step] = (($op | ?{$_.keys -eq $step}).values | Measure -Sum).Sum
-    }
 
     $Hmax = @()
     $Vmax = @()
@@ -36,7 +42,6 @@ function GetMaxDimensions {
     $Vmin = @()
     $H = 0
     $V = 0
-
 
     foreach ($row in $op){
         switch ($row[0]) {
@@ -59,7 +64,8 @@ function main {
     )
     $op = ReadOperations $in
 
-    GetMaxDimensions $op
+    $matrix = New-Object 'object[,]' $(GetMaxDimensions $op)
+    1+2
 }
 
 
