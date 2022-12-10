@@ -3,11 +3,13 @@ function ReadOperations {
     param (
         $in
     )
-    #operations 
-    $op = New-Object 'Object[,]' 2, $in.Count
+    #operations
+    $op = @()
 
-    for ($y = 0; $y -le $op.GetUpperBound(1); $y++) {
-        $op[0, $y] , $op[1, $y] = ($in[$y] -split " ")
+    for ($y = 0; $y -le $in.count; $y++) {
+        $row = ($in[$y] -split " ")
+        $op += ,@($row)
+        #$op += @{$row[0] = [int]$row[1]}
     }
 
     return $op
@@ -18,8 +20,36 @@ function GetMaxDimensions {
         $op
     )
     
-    $left = $op
-    
+    $stepsum = @{
+        U = 0
+        D = 0
+        R = 0
+        L = 0
+    }
+    foreach ($step in $($stepsum.keys)){
+        $stepsum[$step] = (($op | ?{$_.keys -eq $step}).values | Measure -Sum).Sum
+    }
+
+    $Hmax = @()
+    $Vmax = @()
+    $Hmin= @()
+    $Vmin = @()
+    $H = 0
+    $V = 0
+
+
+    foreach ($row in $op){
+        switch ($row[0]) {
+            U { $V+=$row[1]; $Vmax+=$V}
+            D { $V-=$row[1]; $Vmin+=$V}
+            R { $H+=$row[1]; $Hmax+=$H}
+            L { $H-=$row[1]; $Hmin+=$H}
+        }
+    }
+    $Hmax = ($Hmax | Measure-Object -Maximum).Maximum
+    $Vmax = ($Vmax | Measure-Object -Maximum).Maximum
+
+    return $Hmax, $Vmax
 }
 
 #main
