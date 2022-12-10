@@ -1,5 +1,5 @@
 #functions
-function CalculatePosition {
+function MoveHead {
     param (
         $current,
         $move
@@ -16,14 +16,26 @@ function CalculatePosition {
 
 }
 
+function Move {
+    param (
+        $head,
+        $tail,
+        $move
+    )
+
+    #for ()
+    
+    $matrix[$tail[0], $tail[1]] = 1
+}
+
 function ReadOperations {
     param (
         $in
     )
     #operations
-    $op = @()
+    #[array]$op = $null
 
-    for ($y = 0; $y -le $in.count; $y++) {
+    for ($y = 0; $y -lt $in.count; $y++) {
         $row = ($in[$y] -split " ")
         $op += ,@($row)
     }
@@ -36,23 +48,19 @@ function GetMaxDimensions {
         $op
     )
 
-    $Hmax = @()
-    $Vmax = @()
-    $Hmin= @()
-    $Vmin = @()
-    $H = 0
-    $V = 0
+    $H = @()
+    $V = @()
+
+    $startingPoint = @(0,0)
 
     foreach ($row in $op){
-        switch ($row[0]) {
-            U { $V+=$row[1]; $Vmax+=$V}
-            D { $V-=$row[1]; $Vmin+=$V}
-            R { $H+=$row[1]; $Hmax+=$H}
-            L { $H-=$row[1]; $Hmin+=$H}
-        }
+        $startingPoint = MoveHead $startingPoint $row
+        $H += $startingPoint[0]
+        $V += $startingPoint[1]
     }
-    $Hmax = ($Hmax | Measure-Object -Maximum).Maximum
-    $Vmax = ($Vmax | Measure-Object -Maximum).Maximum
+
+    $Hmax = 1 + ($H | Measure-Object -Maximum).Maximum
+    $Vmax = 1 + ($V | Measure-Object -Maximum).Maximum
 
     return $Hmax, $Vmax
 }
@@ -65,7 +73,16 @@ function main {
     $op = ReadOperations $in
 
     $matrix = New-Object 'object[,]' $(GetMaxDimensions $op)
-    1+2
+    $matrix[0,0] = 1
+
+    $head = @(0, 0)
+    $tail = @(0, 0)
+
+    foreach ($o in $op){
+        MoveHead $head $o
+        
+    }
+    $matrix
 }
 
 
