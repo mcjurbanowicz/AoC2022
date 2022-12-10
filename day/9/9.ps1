@@ -16,46 +16,61 @@ function ConvertToVector {
 
 }
 
+function CheckIsTailAround {
+    param (
+        $head,
+        $tail
+    )
+    (($head[0] - $tail[0]) -in (-1..1)) -and
+    (($head[1] - $tail[1]) -in (-1..1))
+}
+
 function MakeMove {
     param (
         $head,
         $tail,
         $move
     )
-    #head always moves in single direction
-    if(($move[0]+$move[1]) -lt 0){
-        $multiplier = -1
+
+    #horizontal
+    if($move[1] -eq 0){
+        $multiplier = $move[0] / [Math]::Abs($move[0])
+
+        for ($x = 0; $x -ne $move[0]; $x+=$multiplier){
+            $head[0] += $multiplier
+            #$matrix[$head[0], $head[1]] = 1
+
+            if (-not (CheckIsTailAround $head $tail)){
+                $tail[1] = $head[1]
+                $tail[0] += $multiplier
+                $matrix[$tail[0], $tail[1]] = 1
+            }
+        }
     }
-    $multiplier = 1
 
+    #vertical
+    if($move[0] -eq 0){
+        $multiplier = $move[1] / [Math]::Abs($move[1])
 
-    for ($x = 0; $x -lt $move[0]; $x++){
-        $head[0] += $multiplier
-        
+        for ($x = 0; $x -ne $move[1]; $x+=$multiplier){
+            $head[1] += $multiplier
+            #$matrix[$head[0], $head[1]] = 1
 
-        
-        $matrix[$head[0], $head[1]] = 1
-        $matrix[$tail[0], $tail[1]] = 1
-        
+            if (-not (CheckIsTailAround $head $tail)){
+                $tail[0] = $head[0]
+                $tail[1] += $multiplier
+                $matrix[$tail[0], $tail[1]] = 1
+            }
+        }
     }
-    for ($y = 0; $y -lt $move[1]; $y++){
-        $head[1] += $multiplier
-
-        $matrix[$head[0], $head[1]] = 1
-        $matrix[$tail[0], $tail[1]] = 1
-    }
+    
     return $head, $tail
-
-
 }
 
 function ReadOperations {
     param (
         $in
     )
-    #operations
-    #[array]$op = $null
-
     for ($y = 0; $y -lt $in.count; $y++) {
         $row = ($in[$y] -split " ")
         $op += ,@($row)
@@ -93,17 +108,19 @@ function main {
     )
     $op = ReadOperations $in
 
-    $matrix = New-Object 'object[,]' $(GetMaxDimensions $op)
+    #$matrix = New-Object 'object[,]' $(GetMaxDimensions $op) #bug
+    $matrix = New-Object 'object[,]' 500,500
     $matrix[0,0] = 1
 
     $head = @(0, 0)
     $tail = @(0, 0)
 
     foreach ($movement in $op){
-        MakeMove $head $tail $(ConvertToVector @(0,0) $movement)
+        $head, $tail = MakeMove $head $tail $(ConvertToVector @(0,0) $movement)
         
     }
-    $matrix
+
+    return $matrix 
 }
 
 
@@ -113,7 +130,7 @@ $testResults = 13
 
 
 Write-Output "`nAnwsers:"
-main $testdata
-#main $data
+Write-Output (main $testdata | Measure -Sum).Sum
+Write-Output (main $data | Measure -Sum).Sum
 
 
