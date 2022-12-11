@@ -95,7 +95,6 @@ function MakeMove {
                 $matrix[$rope[$rope.count-1][0], $rope[$rope.count-1][1]] = 1
             }
         }
-    
     }
 
     #vertical
@@ -194,11 +193,6 @@ function main {
         $t += ,@(("_" * 51) -split '')
     }
     
-
-    #$aa2 = @(); ($g -split "") | %{$aa2 += ,@($_)}
-
-    #$m = $m.ToCharArray()
-    #$t = $t.ToCharArray()
 
     foreach ($movement in $op){
         $rope = MakeMove $rope $(ConvertToVector @(0,0) $movement)
