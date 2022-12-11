@@ -65,7 +65,7 @@ function MakeMove {
         for ($x = 0; $x -ne $move[0]; $x+=$multiplier){
             #Move head
             $rope[0][0] = $rope[0][0] + $multiplier
-            DisplayRope $rope
+            #DisplayRope $rope
 
             #Move other segments
             for($i=1; $i -ne $rope.count; $i++){
@@ -89,9 +89,7 @@ function MakeMove {
                         Default {}
                     }
 
-                    #$rope[$i][1] += ($rope[$i-1][1] - $rope[$i][1])/2
-                    #$rope[$i][0] += $multiplier
-                    DisplayRope $rope
+                    #DisplayRope $rope
                 }
                 #Note position of last element of rope
                 $matrix[$rope[$rope.count-1][0], $rope[$rope.count-1][1]] = 1
@@ -110,7 +108,7 @@ function MakeMove {
         for ($y = 0; $y -ne $move[1]; $y+=$multiplier){
             #Move head
             $rope[0][1] = $rope[0][1] + $multiplier
-            DisplayRope $rope
+            #DisplayRope $rope
 
             #Move other segments
             for($i=1; $i -ne $rope.count; $i++){
@@ -133,9 +131,7 @@ function MakeMove {
                         Default {}
                     }
 
-                    #$rope[$i][0] += ($rope[$i-1][0] - $rope[$i][0])
-                    #$rope[$i][1] += $multiplier
-                    DisplayRope $rope
+                    #DisplayRope $rope
                 }
                 #Note position of last element of rope
                 $matrix[$rope[$rope.count-1][0], $rope[$rope.count-1][1]] = 1
@@ -255,7 +251,7 @@ Write-Output "`nAnwsers:"
 #Write-Output (main $testdata $rope | Measure -Sum).Sum
 #Write-Output (main $testdata2 $testrope | Measure -Sum).Sum
 
-Write-Output (main $testdata2 $testrope2 | Measure -Sum).Sum
-#Write-Output (main $data $rope | Measure -Sum).Sum
+#Write-Output (main $testdata2 $testrope2 | Measure -Sum).Sum
+Write-Output (main $data $rope | Measure -Sum).Sum
 
 
