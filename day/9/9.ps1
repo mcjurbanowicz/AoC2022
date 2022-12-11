@@ -1,4 +1,28 @@
 #functions
+function DisplayRope {
+    param (
+        $r
+    )
+    
+    $j = @()
+    foreach ($l in 0..50){
+        $j += ,@(("_" * 50) -split '')
+    }
+
+    for($segment=0; $segment -lt $r.count; $segment++){
+        $j[$($r[$segment][1])][$($r[$segment][0])] = $segment
+        if ($segment -eq ($r.count-1)) {
+            $t[$($r[$segment][1])][$($r[$segment][0])] = "x"
+        }
+    }
+    
+    foreach ($line in (($m.count-1)..0)){
+        "$($j[$line] -join '') $line" | Out-Host
+    }
+    "012345678901234567890123456789 $movement" | Out-Host
+    Sleep 0.0
+}
+
 function ConvertToVector {
     param (
         $position,
@@ -27,44 +51,99 @@ function CheckIsTailAround {
 
 function MakeMove {
     param (
-        $head,
-        $tail,
+        $rope,
         $move
     )
 
     #horizontal
     if($move[1] -eq 0){
-        $multiplier = $move[0] / [Math]::Abs($move[0])
+        switch ($move[0] -gt 0) {
+            $true { $multiplier = 1}
+            $false { $multiplier = -1 }
+        }
 
         for ($x = 0; $x -ne $move[0]; $x+=$multiplier){
-            $head[0] += $multiplier
-            #$matrix[$head[0], $head[1]] = 1
+            #Move head
+            $rope[0][0] = $rope[0][0] + $multiplier
+            DisplayRope $rope
 
-            if (-not (CheckIsTailAround $head $tail)){
-                $tail[1] = $head[1]
-                $tail[0] += $multiplier
-                $matrix[$tail[0], $tail[1]] = 1
+            #Move other segments
+            for($i=1; $i -ne $rope.count; $i++){
+                if (-not (CheckIsTailAround $rope[$i-1] $rope[$i])){
+                    #rope[$i-1] - head (previous segment)
+                    #rope[$i] - tail (the segment behind head)
+
+                    switch ($rope[$i-1][1] - $rope[$i][1]) {
+                        1 { $rope[$i][1]++}
+                        2 { $rope[$i][1]++}
+                        -1 { $rope[$i][1]-- }
+                        -2 { $rope[$i][1]-- }
+                        Default {}
+                    }
+
+                    switch ($rope[$i-1][0] - $rope[$i][0]) {
+                        1 { $rope[$i][0]++}
+                        2 { $rope[$i][0]++}
+                        -1 { $rope[$i][0]-- }
+                        -2 { $rope[$i][0]-- }
+                        Default {}
+                    }
+
+                    #$rope[$i][1] += ($rope[$i-1][1] - $rope[$i][1])/2
+                    #$rope[$i][0] += $multiplier
+                    DisplayRope $rope
+                }
+                #Note position of last element of rope
+                $matrix[$rope[$rope.count-1][0], $rope[$rope.count-1][1]] = 1
             }
         }
+    
     }
 
     #vertical
     if($move[0] -eq 0){
-        $multiplier = $move[1] / [Math]::Abs($move[1])
+        switch ($move[1] -gt 0) {
+            $true { $multiplier = 1}
+            $false { $multiplier = -1 }
+        }
 
-        for ($x = 0; $x -ne $move[1]; $x+=$multiplier){
-            $head[1] += $multiplier
-            #$matrix[$head[0], $head[1]] = 1
+        for ($y = 0; $y -ne $move[1]; $y+=$multiplier){
+            #Move head
+            $rope[0][1] = $rope[0][1] + $multiplier
+            DisplayRope $rope
 
-            if (-not (CheckIsTailAround $head $tail)){
-                $tail[0] = $head[0]
-                $tail[1] += $multiplier
-                $matrix[$tail[0], $tail[1]] = 1
+            #Move other segments
+            for($i=1; $i -ne $rope.count; $i++){
+                if (-not (CheckIsTailAround $rope[$i-1] $rope[$i])){
+                    #rope[$i-1] - head (previous segment)
+                    #rope[$i] - tail (the segment behind head)
+
+                    switch ($rope[$i-1][1] - $rope[$i][1]) {
+                        1 { $rope[$i][1]++}
+                        2 { $rope[$i][1]++}
+                        -1 { $rope[$i][1]-- }
+                        -2 { $rope[$i][1]-- }
+                        Default {}
+                    }
+                    switch ($rope[$i-1][0] - $rope[$i][0]) {
+                        1 { $rope[$i][0]++}
+                        2 { $rope[$i][0]++}
+                        -1 { $rope[$i][0]-- }
+                        -2 { $rope[$i][0]-- }
+                        Default {}
+                    }
+
+                    #$rope[$i][0] += ($rope[$i-1][0] - $rope[$i][0])
+                    #$rope[$i][1] += $multiplier
+                    DisplayRope $rope
+                }
+                #Note position of last element of rope
+                $matrix[$rope[$rope.count-1][0], $rope[$rope.count-1][1]] = 1
             }
         }
     }
-    
-    return $head, $tail
+    #DisplayRope $rope
+    return $rope
 }
 
 function ReadOperations {
@@ -104,20 +183,29 @@ function GetMaxDimensions {
 #main
 function main {
     param (
-        $in
+        $in,
+        $rope
     )
     $op = ReadOperations $in
 
     #$matrix = New-Object 'object[,]' $(GetMaxDimensions $op) #bug
     $matrix = New-Object 'object[,]' 500,500
-    $matrix[0,0] = 1
+    $matrix[$rope[0][0],$rope[0][1]] = 1
 
-    $head = @(0, 0)
-    $tail = @(0, 0)
+    $m, $t = @()
+    foreach ($l in 0..50){
+        $m += ,@(("_" * 51) -split '')
+        $t += ,@(("_" * 51) -split '')
+    }
+    
+
+    #$aa2 = @(); ($g -split "") | %{$aa2 += ,@($_)}
+
+    #$m = $m.ToCharArray()
+    #$t = $t.ToCharArray()
 
     foreach ($movement in $op){
-        $head, $tail = MakeMove $head $tail $(ConvertToVector @(0,0) $movement)
-        
+        $rope = MakeMove $rope $(ConvertToVector @(0,0) $movement)
     }
 
     return $matrix 
@@ -125,12 +213,49 @@ function main {
 
 
 $data = gc "$PSScriptRoot/data/input"
+$rope = @(
+    @(1,1),
+    @(1,1),
+    @(1,1),
+    @(1,1),
+    @(1,1),
+    @(1,1),
+    @(1,1),
+    @(1,1),
+    @(1,1),
+    @(1,1)
+)
+
 $testdata = gc "$PSScriptRoot/data/test"
+$testdata2 = gc "$PSScriptRoot/data/test2"
 $testResults = 13
+$testResults2 = 36
+
+$testRope = @(
+    @(1,1),
+    @(1,1)
+)
+
+$testrope2 = @(
+    @(11,5),
+    @(11,5),
+    @(11,5),
+    @(11,5),
+    @(11,5),
+    @(11,5),
+    @(11,5),
+    @(11,5),
+    @(11,5),
+    @(11,5)
+)
 
 
 Write-Output "`nAnwsers:"
-Write-Output (main $testdata | Measure -Sum).Sum
-Write-Output (main $data | Measure -Sum).Sum
+#Write-Output (main $testdata $testrope | Measure -Sum).Sum
+#Write-Output (main $testdata $rope | Measure -Sum).Sum
+#Write-Output (main $testdata2 $testrope | Measure -Sum).Sum
+
+Write-Output (main $testdata2 $testrope2 | Measure -Sum).Sum
+#Write-Output (main $data $rope | Measure -Sum).Sum
 
 
