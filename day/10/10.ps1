@@ -6,6 +6,21 @@ function CheckCycles ($x) {
     }
 }
 
+function DrawPixel {
+    if($cycleCounter -in $sprite){
+        $screen[$cycleCounter-1] = '#'
+    }
+    else{
+        $screen[$cycleCounter-1] = '.'
+    }
+}
+
+function Display {
+    for($line=0; $line -lt 6; $line++){
+        $screen[($line * 40)..(39 + $line *40 )] -join ''| Out-Host
+    }
+}
+
 #main
 function main {
     param (
@@ -16,17 +31,26 @@ function main {
     $x = 1
     $cycleCounter = 1
     $global:sum = 0
+    $screen = ('`' * 300).ToCharArray()
+    $vertical = 0
+    $sprite = @(($x + $vertical * 40), ($x+1 + $vertical * 40), ($x+2 + $vertical * 40))
 
     for ($i=1; $i -le $in.count; $i++){
-        $cycleCounter++; CheckCycles $x
+        DrawPixel; Display; $cycleCounter++; CheckCycles $x
         #$operation = $in[$i]
         $addition = [int]($in[$i] -split ' ')[1]
         if ($addition -ne 0){
+            DrawPixel; Display; $cycleCounter++; CheckCycles $x
+
             $x += $addition
-            $cycleCounter++; CheckCycles $x
+            $vertical = [Math]::Floor(($cycleCounter-1)/40)
+            
+            $sprite = @(($x + $vertical * 40), ($x+1 + $vertical * 40), ($x+2 + $vertical * 40))
         }
     }
     Write-Host "Sum $global:sum"
+    #$screen = $screen[1..$screen.count]
+    Display
 }
 
 $data = gc "$PSScriptRoot/data/input"
