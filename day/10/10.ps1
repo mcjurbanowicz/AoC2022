@@ -1,4 +1,10 @@
 #functions
+function CheckCycles ($x) {
+    if($cycleCounter -in $testResults.keys){
+        $($cycleCounter * $x) | Out-Host
+        $global:sum += $($cycleCounter * $x)
+    }
+}
 
 #main
 function main {
@@ -7,23 +13,20 @@ function main {
     )
     #adding 0th value
     $in = @('fakenoop') + $in
-    #operation time in cycles
-    $step = 2
+    $x = 1
+    $cycleCounter = 1
+    $global:sum = 0
 
-    for ($i=1; $i -le 220; $i++){
-
+    for ($i=1; $i -le $in.count; $i++){
+        $cycleCounter++; CheckCycles $x
+        #$operation = $in[$i]
         $addition = [int]($in[$i] -split ' ')[1]
         if ($addition -ne 0){
-            $book[$i + $step] += $addition
-        }
-        
-        #if("Int32" -eq $addition.gettype().Name){
-        
-        $x += $book[$i]
-        if($i -in $testResults.keys){
-            Write-Output ($i * $x)
+            $x += $addition
+            $cycleCounter++; CheckCycles $x
         }
     }
+    Write-Host "Sum $global:sum"
 }
 
 $data = gc "$PSScriptRoot/data/input"
@@ -37,11 +40,7 @@ $testResults = @{
     220 = 3960
 }
 
-$testdata 
-$x = 1
-$book = @{}
-
-
 Write-Output "`nAnwsers:"
-#main $data
-main $testdata
+main $data
+#main $testdata
+
